@@ -1,3 +1,4 @@
+```mermaid
 usecase-beta
 direction LR
 
@@ -61,3 +62,5 @@ UC_AutoAnnul ..> : include UC_Remb
 
 note for UC_Arrhes "Point d'extension : réservation faite plus de 8 jours avant l'arrivée"
 note for UC_Remb "Uniquement si des arrhes ont été versées"
+
+```
