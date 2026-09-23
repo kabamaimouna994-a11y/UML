@@ -1,64 +1,63 @@
-```mermaid
-flowchart LR
-    Client["Client"]
-    Agent["Agent de voyage"]
-    Reception["Réceptionniste"]
-    Personnel["Personnel restaurant / bar"]
-    Gerant["Gérant"]
-    Paiement["Service de paiement externe"]
-    Temps["Temps / Planificateur"]
+usecase-beta
+direction LR
 
-    subgraph Systeme["Logiciel de gestion des hôtels"]
-        direction TB
-        Disponibilites(["Consulter les disponibilités"])
-        Reserver(["Réserver une chambre"])
-        Verifier(["Vérifier disponibilité et capacité"])
-        Arrhes(["Verser les arrhes"])
-        Encaisser(["Encaisser un paiement"])
-        Annuler(["Annuler sa réservation"])
-        Rembourser(["Rembourser une réservation"])
-        AnnulationAuto(["Annuler les réservations non confirmées à J-8"])
-        Arrivee(["Enregistrer l'arrivée"])
-        Consommations(["Enregistrer les consommations"])
-        Facturer(["Facturer le départ"])
-        Calculer(["Calculer le montant du séjour"])
-        Solder(["Solder le séjour"])
-        ListeArrivees(["Éditer les arrivées prévues chaque matin"])
-        Occupation(["Consulter le taux d'occupation par catégorie"])
-        Administrer(["Administrer hôtels, catégories, chambres et tarifs"])
-    end
+actor Demandeur("Demandeur") <<abstrait>>
+actor Client("Client")
+actor Agent("Agent de voyage")
+actor Recep("Réceptionniste")
+actor Serveur("Serveur restaurant/bar")
+actor Gerant("Gérant")
+actor Temps("Temps") <<temps>>
+actor Paiement("Service de paiement externe") <<système externe>>
 
-    Client --- Disponibilites
-    Client --- Reserver
-    Client --- Arrhes
-    Client --- Annuler
+systemBoundary SYS["Logiciel de gestion hôtelière"]
+  UC_Dispo("Consulter les disponibilités")
+  UC_Res("Réserver une chambre")
+  UC_Arrhes("Verser des arrhes")
+  UC_Annul("Annuler une réservation")
+  UC_Remb("Rembourser selon le délai")
+  UC_AutoAnnul("Annuler automatiquement les réservations non confirmées")
+  UC_Arrivee("Enregistrer l'arrivée")
+  UC_Conso("Enregistrer une consommation")
+  UC_Fact("Facturer le départ")
+  UC_Enc("Encaisser un paiement")
+  UC_ListeArr("Éditer les arrivées prévues")
+  UC_Taux("Consulter le taux d'occupation")
+  UC_AdmHotel("Administrer hôtels et catégories")
+  UC_AdmCh("Administrer chambres")
+  UC_AdmTarif("Administrer tarifs")
+end
 
-    Agent --- Disponibilites
-    Agent --- Reserver
-    Agent --- Arrhes
+Client --|> Demandeur
+Agent --|> Demandeur
 
-    Reception --- Arrivee
-    Reception --- Consommations
-    Reception --- Facturer
-    Reception --- Solder
-    Reception --- ListeArrivees
+Demandeur --> UC_Dispo
+Demandeur --> UC_Res
+Demandeur --> UC_Annul
 
-    Personnel --- Consommations
+Recep --> UC_Arrivee
+Recep --> UC_Conso
+Recep --> UC_Fact
+Recep --> UC_ListeArr
+Serveur --> UC_Conso
 
-    Gerant --- Occupation
-    Gerant --- Administrer
+Gerant --> UC_Taux
+Gerant --> UC_AdmHotel
+Gerant --> UC_AdmCh
+Gerant --> UC_AdmTarif
 
-    Paiement --- Encaisser
-    Paiement --- Rembourser
+Temps --> UC_AutoAnnul
+Temps --> UC_ListeArr
 
-    Temps --- AnnulationAuto
-    Temps --- ListeArrivees
+UC_Enc -- Paiement
+UC_Remb -- Paiement
 
-    Reserver -.->|«include»| Verifier
-    Arrhes -.->|"«extend» : arrivée à plus de 8 jours et versement immédiat"| Reserver
-    Arrhes -.->|«include»| Encaisser
-    Rembourser -.->|"«extend» : montant remboursable positif"| Annuler
-    Facturer -.->|«include»| Calculer
-    Solder -.->|«include»| Facturer
-    Encaisser -.->|"«extend» : solde positif"| Solder
-```
+UC_Res ..> : include UC_Dispo
+UC_Arrhes ..> : extend UC_Res
+UC_Arrhes ..> : include UC_Enc
+UC_Fact ..> : include UC_Enc
+UC_Remb ..> : extend UC_Annul
+UC_AutoAnnul ..> : include UC_Remb
+
+note for UC_Arrhes "Point d'extension : réservation faite plus de 8 jours avant l'arrivée"
+note for UC_Remb "Uniquement si des arrhes ont été versées"
